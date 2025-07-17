@@ -203,20 +203,20 @@ class UpConv2(nn.Module):
 class ConditionDecoder(nn.Module):
     def __init__(self, input_dim=200):
         super(ConditionDecoder, self).__init__()
-        self.fc = nn.Linear(input_dim, 128 * 37 * 37)  # 首先升维到 37x37
+        self.fc = nn.Linear(input_dim, 128 * 37 * 37) 
         self.deconv = nn.Sequential(
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),  # 37x37 -> 74x74
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),  
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),  # 74x74 -> 148x148
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),  
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(32, 32, kernel_size=4, stride=1, padding=0),  # 调整到151x151
+            nn.ConvTranspose2d(32, 32, kernel_size=4, stride=1, padding=0), 
             nn.ReLU(inplace=True)
         )
-        self.final_conv = nn.Conv2d(32, 1, kernel_size=3, padding=1)  # 最后输出到单通道
+        self.final_conv = nn.Conv2d(32, 1, kernel_size=3, padding=1) 
 
     def forward(self, x):
         x = self.fc(x)
-        x = x.view(x.size(0), 128, 37, 37)  # 将一维向量重塑为 64x37x37 的特征图
+        x = x.view(x.size(0), 128, 37, 37)  
         x = self.deconv(x)
         x = self.final_conv(x)
         return x
@@ -227,7 +227,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.condition_decoder = ConditionDecoder(input_dim=condition_dim)
 
-        # 使用谱归一化的卷积层
+      
         self.conv_layers = nn.Sequential(
             nn.utils.spectral_norm(nn.Conv2d(input_channels + 1, 64, kernel_size=4, stride=2, padding=1)),
             # 256x256 -> 128x128
